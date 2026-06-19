@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@widget/AppIcon.vue';
-import { useAppIconLayoutStore } from '@store/AppIconLayout.ts';
+import { useAppIconLayoutStore } from '@store/AppIconLayout';
 
 const { AppContainerPadding: __padding } = useAppIconLayoutStore();
 

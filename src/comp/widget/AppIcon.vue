@@ -8,9 +8,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { Axis } from '@utils/DataType';
-import { useAppIconLayoutStore } from '@store/AppIconLayout.ts';
+import { ref, onMounted, computed } from 'vue';
+import { Vector, UnitVector } from '@utils/DataType';
+import { useAppIconLayoutStore } from '@store/AppIconLayout';
 
 import icon from '@assets/img/vue.svg';
 
@@ -28,58 +28,65 @@ const { AppContainerPaddingNum: __paddingNum } = useAppIconLayoutStore();
  *  - remove mousemove event listener
  *  - remove mouseup event listener
 */
-let startAxis: Axis = Axis(0, 0);
-let direction: Axis = Axis(0, 0);
-let endAxis: Axis = Axis(0, 0);
-let currentAxis: Axis = Axis(0, 0);
-let originAxis: Axis = Axis(0, 0);
+let startVector: Vector = new Vector(0, 0);
+let direction: Vector = new Vector(0, 0);
+let endVector: Vector = new Vector(0, 0);
+let currentVector: Vector = new Vector(0, 0);
+let originVector: Vector = new Vector(0, 0);
+
+const tran = ref<Vector>(new Vector(0, 0));
+const tranU = computed(() => new UnitVector(tran.value, 'px'))
+
 
 const GetOriginDirection = () => {
   const parentRect = elAppIcon.value!.parentElement!.getBoundingClientRect()
   const itemRect = elAppIcon.value!.getBoundingClientRect()
-  return Axis(
+  return new Vector(
     itemRect.left - parentRect.left - __paddingNum,
     itemRect.top - parentRect.top - __paddingNum
   )
 }
 
-const GetNearNetAxis = (axis: Axis) => {
-  // return axis.subtract(originAxis).divide(2).round(0).multiply(2).add(originAxis)
+const GetNearNetVector = (vector: Vector) => {
+  // return vector.subtract(originVector).divide(2).round(0).multiply(2).add(originVector)
 }
 const onMouseDown = (e: MouseEvent) => {
   console.log('app-icon mouse down');
-  startAxis = Axis(e.clientX, e.clientY);
-  originAxis = GetOriginDirection()
-  console.log({ startAxis });
-  console.log({ originAxis });
+  startVector = new Vector(e.clientX, e.clientY);
+  originVector = GetOriginDirection()
+  console.log({ startVector });
+  console.log({ originVector });
   document.addEventListener('mousemove', onMouseMove);
   document.addEventListener('mouseup', onMouseUp);
 }
 const onMouseMove = (e: MouseEvent) => {
   e.preventDefault();
-  currentAxis = Axis(e.clientX, e.clientY);
-  direction = currentAxis.add(originAxis).subtract(startAxis)
+  currentVector = new Vector(e.clientX, e.clientY);
+  direction = currentVector.add(originVector).subtract(startVector)
 
   // dragging animation
-  elAppIcon.value!.style.transform = `
-  translate(${direction.x}px, ${direction.y}px)
-  `;
+  // elAppIcon.value!.style.transform = `
+  // translate(${direction.x}px, ${direction.y}px)`;
+  tran.value.x = direction.x
+  tran.value.y = direction.y
 }
 const onMouseUp = () => {
   // console.log('app-icon mouse up');
   document.removeEventListener('mousemove', onMouseMove);
   document.removeEventListener('mouseup', onMouseUp);
-  endAxis = currentAxis;
-  direction = currentAxis.add(originAxis).subtract(startAxis)
+  endVector = currentVector;
+  direction = currentVector.add(originVector).subtract(startVector)
   console.log({ direction })
 
-  elAppIcon.value!.style.transform = `translate(${direction.x}px, ${direction.y}px)`;
+  // elAppIcon.value!.style.transform = `translate(${direction.x}px, ${direction.y}px)`;
+  tran.value.x = direction.x
+  tran.value.y = direction.y
 
   // reset 
-  startAxis = Axis(0, 0);
-  direction = Axis(0, 0);
-  endAxis = Axis(0, 0);
-  currentAxis = Axis(0, 0);
+  startVector = new Vector(0, 0);
+  direction = new Vector(0, 0);
+  endVector = new Vector(0, 0);
+  currentVector = new Vector(0, 0);
 }
 onMounted(() => {
   elAppIcon.value?.addEventListener('mousedown', (e: MouseEvent) => {
@@ -93,6 +100,7 @@ onMounted(() => {
 <style scoped>
 .app-icon {
   position: absolute;
+  transform: translate(v-bind('tranU.xo'), v-bind('tranU.yo'));
 }
 
 .app-icon .wrap {
