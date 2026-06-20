@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
-// @ts-expect-error process is a nodejs global
+
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
@@ -38,4 +38,9 @@ export default defineConfig(async () => ({
       "@store": "/src/store",
     },
   },
+  test: {
+    global: true,
+    environment: "happy-dom",
+    include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+  }
 }));

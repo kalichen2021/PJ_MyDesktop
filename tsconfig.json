@@ -3,9 +3,15 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "skipLibCheck": true,
-
+    "types": [
+      "vitest/globals"
+    ],
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -13,23 +19,40 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "preserve",
-
     /* Path aliases */
     "baseUrl": ".",
     "paths": {
-      "@assets/*": ["src/assets/*"],
-      "@comp/*": ["src/comp/*"],
-      "@widget/*": ["src/comp/widget/*"],
-      "@utils/*": ["src/utils/*"],
-      "@store/*": ["src/store/*"]
+      "@assets/*": [
+        "src/assets/*"
+      ],
+      "@comp/*": [
+        "src/comp/*"
+      ],
+      "@widget/*": [
+        "src/comp/widget/*"
+      ],
+      "@utils/*": [
+        "src/utils/*"
+      ],
+      "@store/*": [
+        "src/store/*"
+      ]
     },
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

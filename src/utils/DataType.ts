@@ -1,10 +1,24 @@
-interface Vector {
-  x: number;
-  y: number;
-  add(other: Vector): Vector;
-  subtract(other: Vector): Vector;
-  scale(factor: number): Vector;
+import type { Metrics } from './DataType.d';
+
+
+function Metrics<U extends string>(value: number, unit: U): Metrics<U> {
+  return {
+    unit,
+    value,
+    add(arg1: Metrics<U> | number): Metrics<U> {
+      return (
+        Metrics(Number(this) + Number(arg1), this.unit)
+      ) as unknown as Metrics<U>;
+    },
+    toString(): string {
+      return `${value}${unit}`;
+    },
+    valueOf(): number {
+      return value;
+    }
+  };
 }
+
 
 /**
  * Vector constructor
@@ -19,42 +33,49 @@ class Vector {
     this.x = x;
     this.y = y;
   }
-  add(other: Vector) {
-    return new Vector(this.x + other.x, this.y + other.y);
+  add(arg1: Vector | number, arg2?: number) {
+    if (!isVector(arg1) && arg2) {
+      return new Vector(this.x + arg1, this.y + arg2);
+    } else if (isVector(arg1)) {
+      return new Vector(this.x + arg1.x, this.y + arg1.y);
+    }
+    return new Vector(0, 0)
   }
-  subtract(other: Vector) {
-    return new Vector(this.x - other.x, this.y - other.y);
+  subtract(arg1: Vector | number, arg2?: number) {
+    if (!isVector(arg1) && arg2) {
+      return new Vector(this.x - arg1, this.y - arg2);
+    } else if (isVector(arg1)) {
+      return new Vector(this.x - arg1.x, this.y - arg1.y);
+    }
+    return new Vector(0, 0)
   }
   scale(factor: number) {
     return new Vector(this.x * factor, this.y * factor);
   }
 }
 
-type NumWithUnit<Unit extends string> = `${number}${Unit}`
 const toNumber = (t: string): number => {
   return Number(t.match(/\d+/)?.[0]) || 0;
 }
 const isVector = (obj: any): obj is Vector => {
   return obj && typeof obj.x === 'number' && typeof obj.y === 'number' //!!!
 }
-class UnitVector<U extends string> extends Vector {
+class UnitVector<U extends string> {
   unit: U;
-  xo: NumWithUnit<U>;
-  yo: NumWithUnit<U>;
-  constructor(xo: NumWithUnit<U>, yo: NumWithUnit<U>);
+  x: Metrics<U>;
+  y: Metrics<U>;
+  constructor(x: Metrics<U>, y: Metrics<U>);
   constructor(object: Vector, Unit: U);
 
-  constructor(arg1: NumWithUnit<U> | Vector, arg2: NumWithUnit<U> | U) {
+  constructor(arg1: Vector | Metrics<U>, arg2: U | Metrics<U>) {
     if (isVector(arg1) && typeof arg2 === 'string') {
-      super(arg1.x, arg1.y);
-      this.unit = arg2 as U;
-      this.xo = String(arg1.x) + arg2 as NumWithUnit<U>;
-      this.yo = String(arg1.y) + arg2 as NumWithUnit<U>;
+      this.x = arg1.x + arg2 as unknown as Metrics<U>;
+      this.y = arg1.y + arg2 as unknown as Metrics<U>;
+      this.unit = arg2;
     } else {
-      super(toNumber(arg1 as NumWithUnit<U>), toNumber(arg2 as NumWithUnit<U>));
-      this.unit = this.__GetUnit__(arg1 as NumWithUnit<U>);
-      this.xo = arg1 as NumWithUnit<U>;
-      this.yo = arg2 as NumWithUnit<U>;
+      this.x = arg1 as Metrics<U>;
+      this.y = arg2 as Metrics<U>;
+      this.unit = this.__GetUnit__(arg1.toString());
     }
   }
   // constructor() {
@@ -67,17 +88,23 @@ class UnitVector<U extends string> extends Vector {
     return t.match(/[a-zA-Z]/)?.[0] as U;
   }
   add(other: UnitVector<U>): UnitVector<U> {
-    super.add(other);
-    return this;
+    return new UnitVector<U>(
+      this.x.add(other.x) as Metrics<U>,
+      this.y.add(other.y) as Metrics<U>
+    );
   }
   subtract(other: UnitVector<U>): UnitVector<U> {
-    super.subtract(other);
-    return this;
+    return new UnitVector<U>(
+      Metrics(this.x.value - other.x.value, this.unit) as Metrics<U>,
+      Metrics(this.y.value - other.y.value, this.unit) as Metrics<U>
+    );
   }
   scale(factor: number): UnitVector<U> {
-    super.scale(factor);
-    return this;
+    return new UnitVector<U>(
+      Metrics(this.x.value * factor, this.unit) as Metrics<U>,
+      Metrics(this.y.value * factor, this.unit) as Metrics<U>
+    );
   }
 }
 
-export { Vector, UnitVector };
+export { Metrics, Vector, UnitVector };

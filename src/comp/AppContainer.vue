@@ -12,8 +12,32 @@
 <script setup lang="ts">
 import AppIcon from '@widget/AppIcon.vue';
 import { useAppIconLayoutStore } from '@store/AppIconLayout';
+import { Vector } from "@utils/DataType";
+import { onMounted } from 'vue';
 
-const { AppContainerPadding: __padding } = useAppIconLayoutStore();
+const {
+  AppContainerPaddingNum: __padding,
+  ContainerNet,
+  AppGap
+} = useAppIconLayoutStore();
+
+
+const InitContainerNet = (width: number, height: number) => {
+  console.log(AppGap.x)
+  for (let i = 0; i < width / AppGap.x; i += 1) {
+    for (let j = 0; j < height / AppGap.y; j += 1) {
+      ContainerNet.push(new Vector(i * AppGap.x, j * AppGap.y))
+    }
+  }
+}
+
+onMounted(() => {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  InitContainerNet(w, h);
+  console.log(ContainerNet[1],)
+
+})
 
 
 </script>
