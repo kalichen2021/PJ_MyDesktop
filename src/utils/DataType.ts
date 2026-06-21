@@ -1,13 +1,50 @@
-import type { Metrics } from './DataType.d';
+export interface Metrics<U extends string> extends Calcable<Metrics<U>> {
+  unit: U;
+  value: number;
+  toString(): string;
+  valueOf(): number;
+}
+
+export type PrimaryMetrics<U extends string> = Pick<Metrics<U>, 'unit' | 'value'>
+
+export type AppearanceMetric<U extends string> = `${number}${U}`
+
+export interface Calcable<T> {
+  add(arg1: number | T, arg2?: number): Calcable<T>;
+  subtract(arg1: number | T, arg2?: number): Calcable<T>;
+  scale(factor: number): Calcable<T>;
+}
+
+export type NumWithUnit<Unit extends string> = `${number}${Unit}`
 
 
-function Metrics<U extends string>(value: number, unit: U): Metrics<U> {
+
+function Metrics<U extends string>(arg1: number | AppearanceMetric<U>, arg2?: U): Metrics<U> {
+  let unit: U;
+  let value: number;
+  if (typeof arg1 === 'number' && arg2) {
+    unit = arg2;
+    value = arg1;
+  } else {
+    unit = (arg1 as unknown as string).match(/[a-zA-Z]+/)?.[0] as U;
+    value = Number((arg1 as unknown as string).match(/\d+/)?.[0]) || 0;
+  }
   return {
     unit,
     value,
     add(arg1: Metrics<U> | number): Metrics<U> {
       return (
         Metrics(Number(this) + Number(arg1), this.unit)
+      ) as unknown as Metrics<U>;
+    },
+    subtract(arg1: Metrics<U> | number): Metrics<U> {
+      return (
+        Metrics(Number(this) - Number(arg1), this.unit)
+      ) as unknown as Metrics<U>;
+    },
+    scale(factor: number): Metrics<U> {
+      return (
+        Metrics(Number(this) * factor, this.unit)
       ) as unknown as Metrics<U>;
     },
     toString(): string {
@@ -84,7 +121,7 @@ class UnitVector<U extends string> {
   static __toNumber__(t: string): number {
     return toNumber(t);
   }
-  __GetUnit__(t: string): U {
+  private __GetUnit__(t: string): U {
     return t.match(/[a-zA-Z]/)?.[0] as U;
   }
   add(other: UnitVector<U>): UnitVector<U> {
@@ -95,14 +132,14 @@ class UnitVector<U extends string> {
   }
   subtract(other: UnitVector<U>): UnitVector<U> {
     return new UnitVector<U>(
-      Metrics(this.x.value - other.x.value, this.unit) as Metrics<U>,
-      Metrics(this.y.value - other.y.value, this.unit) as Metrics<U>
+      this.x.subtract(other.x) as Metrics<U>,
+      this.y.subtract(other.y) as Metrics<U>
     );
   }
   scale(factor: number): UnitVector<U> {
     return new UnitVector<U>(
-      Metrics(this.x.value * factor, this.unit) as Metrics<U>,
-      Metrics(this.y.value * factor, this.unit) as Metrics<U>
+      this.x.scale(factor) as Metrics<U>,
+      this.y.scale(factor) as Metrics<U>
     );
   }
 }

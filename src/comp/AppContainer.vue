@@ -1,42 +1,56 @@
 <template>
   <div class="app-container">
-    <AppIcon />
-    <AppIcon />
-    <AppIcon />
-    <AppIcon />
-    <AppIcon />
-    <AppIcon />
+    <AppIcon v-for="(item, i) in ContainerNet" :key="i" :origin-position="item" :id="i.toString()" />
   </div>
 </template>
 
 <script setup lang="ts">
 import AppIcon from '@widget/AppIcon.vue';
-import { useAppIconLayoutStore } from '@store/AppIconLayout';
+import { useAppIconLayoutStore, useAppIconItemInfoStore } from '@store/AppIconLayout';
 import { Vector } from "@utils/DataType";
-import { onMounted } from 'vue';
+import { onBeforeMount, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
+
+const AILStore = useAppIconLayoutStore();
+const AIISStore = useAppIconItemInfoStore();
 
 const {
   AppContainerPaddingNum: __padding,
   ContainerNet,
   AppGap
-} = useAppIconLayoutStore();
+} = storeToRefs(AILStore);
 
 
-const InitContainerNet = (width: number, height: number) => {
-  console.log(AppGap.x)
-  for (let i = 0; i < width / AppGap.x; i += 1) {
-    for (let j = 0; j < height / AppGap.y; j += 1) {
-      ContainerNet.push(new Vector(i * AppGap.x, j * AppGap.y))
+const initContainerNet = (width: number, height: number) => {
+  console.log(AppGap.value.x)
+  for (let i = 0; i < width / AppGap.value.x; i += 1) {
+    for (let j = 0; j < height / AppGap.value.y; j += 1) {
+      ContainerNet.value.push(new Vector(i * AppGap.value.x, j * AppGap.value.y))
+    }
+  }
+}
+const a_s_d = 1
+console.log(a_s_d)
+const loadAppIconItemLayoutInfoDic = () => {
+  for (let i = 0; i < ContainerNet.value.length; i += 1) {
+    const item = ContainerNet.value[i];
+    AIISStore.appIconItemLayoutInfoDic[i.toString()] = {
+      position_id: item,
+      size_id: new Vector(1, 1),
+      position: item,
+      size: new Vector(1, 1),
+      name: item.toString(),
     }
   }
 }
 
 onMounted(() => {
+
   const w = window.innerWidth;
   const h = window.innerHeight;
-  InitContainerNet(w, h);
-  console.log(ContainerNet[1],)
-
+  initContainerNet(w, h);
+  console.log(ContainerNet.value[9])
+  loadAppIconItemLayoutInfoDic();
 })
 
 

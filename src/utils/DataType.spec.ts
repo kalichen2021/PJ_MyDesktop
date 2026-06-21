@@ -19,3 +19,12 @@ test("UnitVector", () => {
     y: { value: 8, unit: 'm' }
   })
 })
+
+test("2initMetrics", () => {
+  const a = Metrics(1, 'm');
+  const b = Metrics<"m">("2m")
+  expect(a.add(b)).toMatchObject({
+    unit: 'm',
+    value: 3,
+  })
+})

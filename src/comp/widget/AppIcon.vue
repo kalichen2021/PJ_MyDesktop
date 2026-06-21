@@ -10,14 +10,29 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { Vector, UnitVector } from '@utils/DataType';
-import { useAppIconLayoutStore } from '@store/AppIconLayout';
+import { useAppIconLayoutStore, useAppIconItemInfoStore } from '@store/AppIconLayout';
 
 import icon from '@assets/img/vue.svg';
+
+
+const props = defineProps({
+  OriginPosition: {
+    type: Vector,
+    default: () => new Vector(0, 0)
+  },
+  id: {
+    type: String,
+    default: ''
+  }
+})
 
 
 const name = ref<string>('Vue');
 const elAppIcon = ref<HTMLDivElement | null>(null);
 const { AppContainerPaddingNum: __paddingNum } = useAppIconLayoutStore();
+const AIISStore = useAppIconItemInfoStore();
+const itemPositionId = computed(() => AIISStore.appIconItemLayoutInfoDic[props.id].position_id)
+console.log(props.id, itemPositionId.value)
 
 /**
  * onMounted: comp mounted mousedown event
@@ -34,9 +49,10 @@ let endVector: Vector = new Vector(0, 0);
 let currentVector: Vector = new Vector(0, 0);
 let originVector: Vector = new Vector(0, 0);
 
-const tran = ref<Vector>(new Vector(0, 0));
+const tran = ref<Vector>(itemPositionId.value);
 const tranU = computed(() => new UnitVector(tran.value, 'px'))
 
+tran.value = itemPositionId.value;
 
 const GetOriginDirection = () => {
   const parentRect = elAppIcon.value!.parentElement!.getBoundingClientRect()
@@ -54,8 +70,6 @@ const onMouseDown = (e: MouseEvent) => {
   console.log('app-icon mouse down');
   startVector = new Vector(e.clientX, e.clientY);
   originVector = GetOriginDirection()
-  console.log({ startVector });
-  console.log({ originVector });
   document.addEventListener('mousemove', onMouseMove);
   document.addEventListener('mouseup', onMouseUp);
 }
@@ -76,7 +90,6 @@ const onMouseUp = () => {
   document.removeEventListener('mouseup', onMouseUp);
   endVector = currentVector;
   direction = currentVector.add(originVector).subtract(startVector)
-  console.log({ direction })
 
   // elAppIcon.value!.style.transform = `translate(${direction.x}px, ${direction.y}px)`;
   tran.value.x = direction.x
@@ -100,7 +113,7 @@ onMounted(() => {
 <style scoped>
 .app-icon {
   position: absolute;
-  transform: translate(v-bind('tranU.xo'), v-bind('tranU.yo'));
+  transform: translate(v-bind('tranU.x'), v-bind('tranU.y'));
 }
 
 .app-icon .wrap {

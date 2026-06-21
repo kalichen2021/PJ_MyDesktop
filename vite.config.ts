@@ -39,7 +39,7 @@ export default defineConfig(async () => ({
     },
   },
   test: {
-    global: true,
+    // global: true,
     environment: "happy-dom",
     include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
   }
